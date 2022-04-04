@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <!--Início-->
+    <div class="tools__carneirinhos">
+      <!--Load Vue.js-->
+      <script src="https://unpkg.com/vue@3"></script>
+
+      <!--Vue App-->
+      <div id="app">
+        <div class="tools__caneirinhos__content">
+          <span class="tools__caneirinhos__title"
+            >Contador de carneirinhos</span
+          >
+          <div class="tools__caneirinhos__counter">
+            <span v-if="count!==0" style="margin-right: 1em">{{ count }}</span
+            ><span v-if="count===1">Carneirinho</span
+            ><span v-if="count>1">Carneirinhos</span>
+          </div>
+          <div class="tools__caneirinhos__scenario">
+            <img
+              class="tools__caneirinhos__scenario__sheep"
+              :class="sheepJumping"
+              width="50"
+              src="/kindpng_369717.png"
+            />
+            <img
+              height="50"
+              class="tools__caneirinhos__scenario__fence"
+              src="/fence.png"
+            />
+          </div>
+          <div class="tools__caneirinhos__controllers">
+            <button
+              class="tools__caneirinhos__controllers__start"
+              v-if="!isCounting"
+              @click="startCounter"
+            >
+              Iniciar
+            </button>
+            <button
+              class="tools__caneirinhos__controllers__stop"
+              v-if="isCounting"
+              @click="stopCounter"
+            >
+              Pausar
+            </button>
+            <button
+              class="tools__caneirinhos__controllers__reset"
+              v-if="!isSleeping && count>0"
+              @click="resetCounter"
+            >
+              Reiniciar
+            </button>
+          </div>
+          <div class="tools__caneirinhos__check" v-if="waitingCheck">
+            <span class="tools__caneirinhos__check__text"
+              >Você ainda está acordado?</span
+            >
+            <button
+              class="tools__caneirinhos__check__button"
+              @click="confirmAwake"
+            >
+              Sim, estou acordado!
+            </button>
+          </div>
+          <div class="tools__caneirinhos__sleeping" v-if="isSleeping">
+            Acho que você está dormindo então desliguei o contador.<br />Tenha
+            uma ótima noite!
+          </div>
+        </div>
+      </div>
+
+      <!--Vue Script-->
+      <script>
+        Vue.createApp({
+          data() {
+            return {
+              count: 0,
+              isAwake: true,
+              isCounting: false,
+              lastCheck: 0,
+              waitingCheck: false,
+              sheepJumping: "",
+              isSleeping: false,
+            };
+          },
+          methods: {
+            checkIsAwake() {
+              if (
+                this.count > 20 &&
+                this.count > this.lastCheck + 10 &&
+                !this.waitingCheck
+              ) {
+                this.waitingCheck = true;
+              }
+              if (this.count > this.lastCheck + 40 && this.waitingCheck) {
+                this.resetCounter();
+                this.isSleeping = true;
+              }
+            },
+            confirmAwake() {
+              this.isAwake = true;
+              this.waitingCheck = false;
+              this.lastCheck = this.count;
+            },
+            resetCounter() {
+              this.stopCounter();
+              this.count = 0;
+              this.isAwake = true;
+              this.lastCheck = 0;
+              this.waitingCheck = false;
+            },
+            sheepStartJumping() {
+              this.sheepJumping = "sheep__jumping";
+            },
+            sheepStopJumping() {},
+            startCounter() {
+              this.isSleeping = false;
+              this.isCounting = true;
+              this.sheepStartJumping();
+              this.countInterval = setInterval(() => {
+                this.count += 1;
+                this.checkIsAwake();
+              }, 3000);
+            },
+            stopCounter() {
+              clearInterval(this.countInterval);
+              this.sheepJumping = "";
+              this.confirmAwake();
+              this.isCounting = false;
+              this.sheepStopJumping();
+            },
+          },
+          beforeDestroy() {
+            this.stopCounter();
+          },
+        }).mount("#app");
+      </script>
+
+      <!--Vue Style-->
+      <style scoped>
+        @import url("https://fonts.googleapis.com/css2?family=Livvic:wght@400;700&display=swap");
+        .tools__carneirinhos {
+          font-family: "Livvic", sans-serif;
+        }
+        .tools__carneirinhos button {
+          border-radius: 50px;
+          font-family: "Livvic", sans-serif;
+          font-size: 18px;
+          padding: 5px 15px;
+        }
+        .tools__caneirinhos__controllers__stop,
+        .tools__caneirinhos__controllers__reset {
+          background-color: #002b49;
+          border: 2px #ffffff solid;
+          color: #ffffff;
+        }
+        .tools__caneirinhos__content {
+          background-color: #002b49;
+          color: #ffffff;
+          display: flex;
+          flex-direction: column;
+          height: 300px;
+          padding: 10px;
+          width: 300px;
+        }
+        .tools__caneirinhos__title {
+          font-size: 18px;
+          font-weight: bold;
+          margin-bottom: 5px;
+          text-align: center;
+          text-transform: uppercase;
+        }
+        .tools__caneirinhos__counter {
+          color: #bfe338;
+          font-size: 18px;
+          font-weight: bold;
+          height: 20px;
+          text-align: center;
+        }
+        .tools__caneirinhos__scenario {
+          height: 100px;
+        }
+        .tools__caneirinhos__scenario__fence {
+          -webkit-transform: scaleX(-1);
+          left: 125px;
+          position: relative;
+          top: 60px;
+          transform: scaleX(-1);
+        }
+        .tools__caneirinhos__scenario__sheep {
+          position: relative;
+          top: 50px;
+          left: 240px;
+        }
+        .tools__caneirinhos__controllers {
+          display: flex;
+          justify-content: space-around;
+          padding-top: 20px;
+        }
+        .tools__caneirinhos__check {
+          display: flex;
+          flex-direction: column;
+          padding-top: 10px;
+          text-align: center;
+        }
+        .tools__caneirinhos__check__text {
+          margin-bottom: 10px;
+        }
+        .tools__caneirinhos__controllers__start,
+        .tools__caneirinhos__check__button {
+          background-color: #bfe338;
+          border: none;
+          color: #002b49;
+        }
+        .tools__caneirinhos__sleeping {
+          padding-top: 10px;
+          text-align: center;
+        }
+        .sheep__jumping {
+          animation: sheepJumping;
+          animation-duration: 3s;
+          animation-iteration-count: infinite;
+          animation-timing-function: linear;
+        }
+
+        @keyframes sheepJumping {
+          0% {
+            top: 50px;
+            left: 240px;
+          }
+          25% {
+            top: 0px;
+            left: 200px;
+          }
+          50% {
+            top: 50px;
+            left: 150px;
+          }
+          90% {
+            opacity: 100%;
+          }
+          100% {
+            top: 50px;
+            left: -50px;
+            opacity: 0;
+          }
+        }
+      </style>
+    </div>
+    <!--Fim-->
+  </body>
+</html>
